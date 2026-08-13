@@ -1,7 +1,7 @@
-import app from './index.ts'
+import app from "./index.ts";
 
-app.get('/', (req, res) => {
-  res.type('html').send(`
+app.get("/", (req, res) => {
+  res.type("html").send(`
     <!doctype html>
     <html>
       <head>
@@ -21,26 +21,25 @@ app.get('/', (req, res) => {
         <img src="/logo.png" alt="Logo" width="120" />
       </body>
     </html>
-  `)
-})
+  `);
+});
 
-app.get('/about', function (req, res) {
-  res.sendFile(path.join(__dirname, '..', 'components', 'about.htm'))
-})
+app.get("/about", function (req, res) {
+  res.sendFile(path.join(__dirname, "..", "components", "about.htm"));
+});
 
 // Example API endpoint - JSON
-app.get('/api-data', (req, res) => {
+app.get("/api-data", (req, res) => {
   res.json({
-    message: 'Here is some sample API data',
-    items: ['apple', 'banana', 'cherry'],
-  })
-})
+    message: "Here is some sample API data",
+    items: ["apple", "banana", "cherry"],
+  });
+});
 
 // Health check
-app.get('/healthz', (req, res) => {
-  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() })
-})
+app.get("/healthz", (req, res) => {
+  res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+});
 
-app.get('/github', (req, res) => {
-  
-})
+app.get("/github", (req, res) => {
+});
