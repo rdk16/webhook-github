@@ -1,13 +1,5 @@
-import express from 'express'
-import path from 'path'
-import { fileURLToPath } from 'url'
+app
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-
-export const app = express()
-
-// Home route - HTML
 app.get('/', (req, res) => {
   res.type('html').send(`
     <!doctype html>
@@ -48,5 +40,3 @@ app.get('/api-data', (req, res) => {
 app.get('/healthz', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() })
 })
-
-export default app
