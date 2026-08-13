@@ -1,52 +1,74 @@
-import express from 'express'
-import path from 'path'
-import { fileURLToPath } from 'url'
+import express, { Request, Response } from 'express';
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+const app = express();
 
-export const app = express()
+app.use(express.json());
 
-// Home route - HTML
-app.get('/', (req, res) => {
-  res.type('html').send(`
-    <!doctype html>
-    <html>
-      <head>
-        <meta charset="utf-8"/>
-        <title>Express on Vercel</title>
-        <link rel="stylesheet" href="/style.css" />
-      </head>
-      <body>
-        <nav>
-          <a href="/">Home</a>
-          <a href="/about">About</a>
-          <a href="/api-data">API Data</a>
-          <a href="/healthz">Health</a>
-        </nav>
-        <h1>Welcome to Express on Vercel 🚀</h1>
-        <p>This is a minimal example without a database or forms.</p>
-        <img src="/logo.png" alt="Logo" width="120" />
-      </body>
-    </html>
-  `)
-})
+// Interfaces para tipagem do payload do GitHub (exemplo focado em Push)
+interface GitHubRepository {
+  full_name: string;
+}
 
-app.get('/about', function (req, res) {
-  res.sendFile(path.join(__dirname, '..', 'components', 'about.htm'))
-})
+interface GitHubPusher {
+  name: string;
+}
 
-// Example API endpoint - JSON
-app.get('/api-data', (req, res) => {
-  res.json({
-    message: 'Here is some sample API data',
-    items: ['apple', 'banana', 'cherry'],
-  })
-})
+interface GitHubCommit {
+  id: string;
+  message: string;
+  url: string;
+}
 
-// Health check
-app.get('/healthz', (req, res) => {
-  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() })
-})
+interface GitHubWebhookPayload {
+  repository?: GitHubRepository;
+  pusher?: GitHubPusher;
+  commits?: GitHubCommit[];
+}
 
-export default app
+// Tipagem estendida para o Request do Express
+interface GitHubRequest extends Request {
+  body: GitHubWebhookPayload;
+  headers: {
+    'x-github-event'?: string;
+    [key: string]: string | string[] | undefined;
+  };
+}
+
+app.post('/api/webhook', async (req: GitHubRequest, res: Response): Promise<Response> => {
+  try {
+    const eventType: string = req.headers['x-github-event'] || 'evento';
+    const payload: GitHubWebhookPayload = req.body;
+
+    let message: string = `🚀 Novo evento **${eventType}** recebido!`;
+    
+    if (eventType === 'push') {
+      const repo: string = payload.repository?.full_name || 'repositório';
+      const author: string = payload.pusher?.name || 'desenvolvedor';
+      const count: number = payload.commits?.length || 0;
+      message = `📦 **${count}** novo(s) commit(s) em **${repo}** por **${author}**!`;
+    }
+
+    const discordWebhookUrl: string | undefined = "https://discord.com/api/webhooks/1537258197532934144/D1b4tovQEHMULQwEYRGxXS8QFjQZrBls8J-3kF_ueeHsB8_hihhL08AtvSrJVIe3-4jl";
+
+    if (!discordWebhookUrl) {
+      console.error('DISCORD_WEBHOOK_URL não configurada.');
+      return res.status(500).json({ error: 'Configuração do Discord ausente' });
+    }
+
+    await fetch(discordWebhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: message }),
+    });
+
+    return res.status(200).json({ status: 'Sucesso' });
+  } catch (error) {
+    console.error('Erro ao processar webhook:', error);
+    return res.status(500).json({ error: 'Erro ao processar webhook' });
+  }
+});
+
+const PORT: string | number = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Servidor TypeScript rodando na porta ${PORT}`);
+});

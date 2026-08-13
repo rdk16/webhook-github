@@ -1,4 +1,4 @@
-app
+import app from './index.ts'
 
 app.get('/', (req, res) => {
   res.type('html').send(`
@@ -39,4 +39,8 @@ app.get('/api-data', (req, res) => {
 // Health check
 app.get('/healthz', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() })
+})
+
+app.get('/github', (req, res) => {
+  
 })
